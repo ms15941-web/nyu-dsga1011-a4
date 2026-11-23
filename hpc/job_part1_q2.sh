@@ -10,7 +10,7 @@
 #SBATCH -e logs/part1_q2_%j.err
 
 set -euo pipefail
-source "${HOME}/miniconda3/bin/activate"
+source "${HOME}/miniconda3/etc/profile.d/conda.sh"
 conda activate dsga1011-hw4-part1
 
 REPO_DIR="/scratch/${USER}/nyu-dsga1011-a4"

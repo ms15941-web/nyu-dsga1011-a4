@@ -10,11 +10,17 @@
 #SBATCH -e logs/part1_q1_%j.err
 
 set -euo pipefail
-source "${HOME}/miniconda3/bin/activate"
+
+# More reliable than `bin/activate` + `conda activate` under sbatch
+source "${HOME}/miniconda3/etc/profile.d/conda.sh"
 conda activate dsga1011-hw4-part1
 
 REPO_DIR="/scratch/${USER}/nyu-dsga1011-a4"
 mkdir -p "${REPO_DIR}/logs"
 cd "${REPO_DIR}/part1"
+
+echo "hostname=$(hostname)"
+echo "which python=$(which python)"
+python -c "import torch; print('cuda:', torch.cuda.is_available(), 'gpus:', torch.cuda.device_count())"
 
 python main.py --train --eval
