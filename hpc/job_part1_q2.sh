@@ -10,15 +10,11 @@
 #SBATCH --account=ds_ga_1011-2026fa
 
 set -euo pipefail
-source "${SLURM_SUBMIT_DIR}/hpc/env_config.sh"
+source "${HOME}/miniconda3/bin/activate"
+conda activate dsga1011-hw4-part1
+
+REPO_DIR="/scratch/${USER}/nyu-dsga1011-a4"
 mkdir -p "${REPO_DIR}/logs"
 cd "${REPO_DIR}/part1"
 
-# Requires ./out from Q1
-singularity exec --nv \
-  --overlay "${OVERLAY_PART1}:ro" \
-  "${SIF}" /bin/bash -lc '
-    source /ext3/env.sh
-    conda activate dsga1011-hw4-part1
-    python main.py --eval_transformed
-  '
+python main.py --eval_transformed
