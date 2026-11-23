@@ -13,7 +13,15 @@ import torch
 
 PAD_IDX = 0
 T5_CHECKPOINT = "google-t5/t5-small"
-TASK_PREFIX = "translate English to SQL: "
+# Compact schema hint helps T5 ground table/column names for this flight DB.
+# Enable with USE_SCHEMA_HINT=1 (used by v2/EC retrain). Keep off when
+# inferring with checkpoints trained without the hint.
+SCHEMA_HINT = (
+    "tables: flight, airport, airport_service, city, days, date_day, fare, "
+    "flight_fare, fare_basis, airline, aircraft, ground_service, state; "
+)
+_USE_SCHEMA = os.environ.get("USE_SCHEMA_HINT", "0") == "1"
+TASK_PREFIX = "translate English to SQL: " + (SCHEMA_HINT if _USE_SCHEMA else "")
 
 
 class T5Dataset(Dataset):

@@ -29,19 +29,21 @@ def get_args():
     parser.add_argument('--optimizer_type', type=str, default="AdamW", choices=["AdamW"],
                         help="What optimizer to use")
     # Default lr=1e-1 in the skeleton is usually too high for T5 fine-tuning.
-    parser.add_argument('--learning_rate', type=float, default=1e-4)
+    parser.add_argument('--learning_rate', type=float, default=3e-4)
     parser.add_argument('--weight_decay', type=float, default=0.01)
 
     parser.add_argument('--scheduler_type', type=str, default="cosine", choices=["none", "cosine", "linear"],
                         help="Whether to use a LR scheduler and what type to use if so")
     parser.add_argument('--num_warmup_epochs', type=int, default=1,
                         help="How many epochs to warm up the learning rate for if using a scheduler")
-    parser.add_argument('--max_n_epochs', type=int, default=20,
+    parser.add_argument('--max_n_epochs', type=int, default=30,
                         help="How many epochs to train the model for")
-    parser.add_argument('--patience_epochs', type=int, default=5,
+    parser.add_argument('--patience_epochs', type=int, default=6,
                         help="If validation performance stops improving, how many epochs should we wait before stopping?")
-    parser.add_argument('--num_beams', type=int, default=4,
+    parser.add_argument('--num_beams', type=int, default=5,
                         help="Beam size to use during SQL generation")
+    parser.add_argument('--max_grad_norm', type=float, default=1.0,
+                        help="Gradient clipping max norm")
 
     parser.add_argument('--use_wandb', action='store_true',
                         help="If set, we will use wandb to keep track of experiments")
@@ -72,10 +74,13 @@ def _generate_sql(model, tokenizer, bos_id, encoder_input, encoder_mask, num_bea
         max_new_tokens=MAX_NEW_TOKENS,
         num_beams=num_beams,
         early_stopping=True,
+        length_penalty=1.0,
     )
     sql_queries = []
     for seq in generated:
         text = tokenizer.decode(seq, skip_special_tokens=True).strip()
+        # Light cleanup: collapse whitespace that sometimes breaks SQL parsers
+        text = " ".join(text.split())
         sql_queries.append(text)
     return sql_queries
 
@@ -145,6 +150,8 @@ def train_epoch(args, model, train_loader, optimizer, scheduler):
         non_pad = decoder_targets != PAD_IDX
         loss = criterion(logits[non_pad], decoder_targets[non_pad])
         loss.backward()
+        if args.max_grad_norm is not None and args.max_grad_norm > 0:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
         optimizer.step()
         if scheduler is not None: 
             scheduler.step()
