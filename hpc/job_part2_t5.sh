@@ -13,10 +13,11 @@ set -euo pipefail
 source "${HOME}/miniconda3/etc/profile.d/conda.sh"
 conda activate dsga1011-hw4-part2
 
-REPO_DIR="/scratch/${USER}/nyu-dsga1011-a4"
+REPO_DIR="${SLURM_SUBMIT_DIR}"
 mkdir -p "${REPO_DIR}/logs" "${REPO_DIR}/part2/results" "${REPO_DIR}/part2/records" "${REPO_DIR}/part2/checkpoints"
 cd "${REPO_DIR}/part2"
 
+echo "REPO_DIR=${REPO_DIR}"
 echo "hostname=$(hostname)"
 echo "which python=$(which python)"
 python -c "import torch; print('cuda:', torch.cuda.is_available(), 'gpus:', torch.cuda.device_count())"

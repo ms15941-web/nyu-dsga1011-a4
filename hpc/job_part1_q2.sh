@@ -13,7 +13,7 @@ set -euo pipefail
 source "${HOME}/miniconda3/etc/profile.d/conda.sh"
 conda activate dsga1011-hw4-part1
 
-REPO_DIR="/scratch/${USER}/nyu-dsga1011-a4"
+REPO_DIR="${SLURM_SUBMIT_DIR}"
 mkdir -p "${REPO_DIR}/logs"
 cd "${REPO_DIR}/part1"
 
