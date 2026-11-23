@@ -45,7 +45,16 @@ def do_train(args, model, train_dataloader, save_dir="./out"):
     # You can use progress_bar.update(1) to see the progress during training
     # You can refer to the pytorch tutorial covered in class for reference
 
-    raise NotImplementedError
+    for epoch in range(num_epochs):
+        for batch in train_dataloader:
+            batch = {k: v.to(device) for k, v in batch.items()}
+            outputs = model(**batch)
+            loss = outputs.loss
+            loss.backward()
+            optimizer.step()
+            lr_scheduler.step()
+            optimizer.zero_grad()
+            progress_bar.update(1)
 
     ##### YOUR CODE ENDS HERE ######
 
@@ -93,7 +102,24 @@ def create_augmented_dataloader(args, dataset):
     # dataloader will be for the original training split augmented with 5k random transformed examples from the training set.
     # You may find it helpful to see how the dataloader was created at other place in this code.
 
-    raise NotImplementedError
+    # Sample 5k training examples and apply the same transformation used for OOD evaluation
+    transformed_train = (
+        dataset["train"]
+        .shuffle(seed=42)
+        .select(range(5000))
+        .map(custom_transform, load_from_cache_file=False)
+    )
+
+    # Original train + 5k transformed examples
+    augmented_train = datasets.concatenate_datasets([dataset["train"], transformed_train])
+
+    # Match the tokenization / formatting used elsewhere in this file
+    augmented_tokenized = augmented_train.map(tokenize_function, batched=True, load_from_cache_file=False)
+    augmented_tokenized = augmented_tokenized.remove_columns(["text"])
+    augmented_tokenized = augmented_tokenized.rename_column("label", "labels")
+    augmented_tokenized.set_format("torch")
+
+    train_dataloader = DataLoader(augmented_tokenized, shuffle=True, batch_size=args.batch_size)
 
     ##### YOUR CODE ENDS HERE ######
 

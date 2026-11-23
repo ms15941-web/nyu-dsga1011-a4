@@ -8,10 +8,13 @@ from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
 import wandb
 
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+T5_CHECKPOINT = "google-t5/t5-small"
+
 
 def setup_wandb(args):
     # Implement this if you wish to use wandb in your experiments
-    pass
+    wandb.init(project="dsga1011-a4-t5", name=args.experiment_name, config=vars(args))
+
 
 def initialize_model(args):
     '''
@@ -20,7 +23,15 @@ def initialize_model(args):
     or training a T5 model initialized with the 'google-t5/t5-small' config
     from scratch.
     '''
-    pass
+    if args.finetune:
+        model = T5ForConditionalGeneration.from_pretrained(T5_CHECKPOINT)
+    else:
+        config = T5Config.from_pretrained(T5_CHECKPOINT)
+        model = T5ForConditionalGeneration(config)
+
+    model.to(DEVICE)
+    return model
+
 
 def mkdir(dirpath):
     if not os.path.exists(dirpath):
@@ -29,18 +40,33 @@ def mkdir(dirpath):
         except FileExistsError:
             pass
 
+
 def save_model(checkpoint_dir, model, best):
     # Save model checkpoint to be able to load the model later
-    pass
+    mkdir(checkpoint_dir)
+    filename = "best.pt" if best else "last.pt"
+    path = os.path.join(checkpoint_dir, filename)
+    torch.save(model.state_dict(), path)
+
 
 def load_model_from_checkpoint(args, best):
     # Load model from a checkpoint
-    pass
+    model = initialize_model(args)
+    model_type = "ft" if args.finetune else "scr"
+    checkpoint_dir = os.path.join("checkpoints", f"{model_type}_experiments", args.experiment_name)
+    filename = "best.pt" if best else "last.pt"
+    path = os.path.join(checkpoint_dir, filename)
+    state_dict = torch.load(path, map_location=DEVICE)
+    model.load_state_dict(state_dict)
+    model.to(DEVICE)
+    return model
+
 
 def initialize_optimizer_and_scheduler(args, model, epoch_length):
     optimizer = initialize_optimizer(args, model)
     scheduler = initialize_scheduler(args, optimizer, epoch_length)
     return optimizer, scheduler
+
 
 def initialize_optimizer(args, model):
     decay_parameters = get_parameter_names(model, ALL_LAYERNORM_LAYERS)
@@ -82,6 +108,7 @@ def initialize_scheduler(args, optimizer, epoch_length):
     else:
         raise NotImplementedError
 
+
 def get_parameter_names(model, forbidden_layer_types):
     result = []
     for name, child in model.named_children():
@@ -93,4 +120,3 @@ def get_parameter_names(model, forbidden_layer_types):
     # Add model specific parameters (defined with nn.Parameter) since they are not in any child.
     result += list(model._parameters.keys())
     return result
-

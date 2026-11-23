@@ -34,6 +34,56 @@ def example_transform(example):
 # You can randomly select each word with some fixed probability to replace by a synonym.
 
 
+# Tunable: raise these if accuracy drop on transformed test is <= 4 points.
+WORD_TYPO_PROB = 0.4
+CHAR_TYPO_PROB = 0.35
+MIN_WORD_LEN = 3
+
+# QWERTY adjacent keys (lowercase). Used to simulate realistic typing mistakes.
+QWERTY_NEIGHBORS = {
+    "q": "wa",
+    "w": "qeas",
+    "e": "wrsd",
+    "r": "etdf",
+    "t": "ryfg",
+    "y": "tugh",
+    "u": "yihj",
+    "i": "uojk",
+    "o": "ipkl",
+    "p": "ol",
+    "a": "qwsz",
+    "s": "awedxz",
+    "d": "serfcx",
+    "f": "drtgvc",
+    "g": "ftyhbv",
+    "h": "gyujnb",
+    "j": "huiknm",
+    "k": "jiolm",
+    "l": "kop",
+    "z": "asx",
+    "x": "zsdc",
+    "c": "xdfv",
+    "v": "cfgb",
+    "b": "vghn",
+    "n": "bhjm",
+    "m": "njk",
+}
+
+
+def _introduce_typos(word):
+    """Replace some letters in a word with QWERTY neighbors."""
+    chars = list(word)
+    for i, ch in enumerate(chars):
+        lower = ch.lower()
+        if lower not in QWERTY_NEIGHBORS:
+            continue
+        if random.random() >= CHAR_TYPO_PROB:
+            continue
+        replacement = random.choice(QWERTY_NEIGHBORS[lower])
+        chars[i] = replacement.upper() if ch.isupper() else replacement
+    return "".join(chars)
+
+
 def custom_transform(example):
     ################################
     ##### YOUR CODE BEGINGS HERE ###
@@ -44,7 +94,19 @@ def custom_transform(example):
 
     # You should update example["text"] using your transformation
 
-    raise NotImplementedError
+    tokens = word_tokenize(example["text"])
+    transformed = []
+    for tok in tokens:
+        if (
+            len(tok) >= MIN_WORD_LEN
+            and tok.isalpha()
+            and random.random() < WORD_TYPO_PROB
+        ):
+            transformed.append(_introduce_typos(tok))
+        else:
+            transformed.append(tok)
+
+    example["text"] = TreebankWordDetokenizer().detokenize(transformed)
 
     ##### YOUR CODE ENDS HERE ######
 
