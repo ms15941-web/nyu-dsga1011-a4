@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=a4_p2_t5
-#SBATCH --output=logs/part2_t5_%j.out
-#SBATCH --error=logs/part2_t5_%j.err
-#SBATCH --time=08:00:00
-#SBATCH --cpus-per-task=4
+#SBATCH -J a4_p2_t5
+#SBATCH -p c12m85-a100-1
+#SBATCH -A ds_ga_1011-2026fa
+#SBATCH --gres=gpu:1
+#SBATCH -t 08:00:00
+#SBATCH -c 4
 #SBATCH --mem=48G
-#SBATCH --gres=gpu:a100:1
-#SBATCH --partition=c12m85-a100-1
-#SBATCH --account=ds_ga_1011-2026fa
+#SBATCH -o logs/part2_t5_%j.out
+#SBATCH -e logs/part2_t5_%j.err
 
 set -euo pipefail
 source "${HOME}/miniconda3/bin/activate"
