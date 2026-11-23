@@ -1,7 +1,8 @@
 #!/bin/bash
 # Shared paths for NYU Torch HPC. Edit ACCOUNT after running: my_slurm_accounts
 
-export ACCOUNT="REPLACE_WITH_YOUR_SLURM_ACCOUNT"   # e.g. torch_pr_xxx or ds_ga_1011-2026fa
+export ACCOUNT="ds_ga_1011-2026fa"
+export PARTITION="c12m85-a100-1"
 export NETID="${USER}"
 
 export REPO_DIR="/scratch/${NETID}/nyu-dsga1011-a4"

@@ -5,8 +5,9 @@
 #SBATCH --time=08:00:00
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=48G
-#SBATCH --gres=gpu:1
-#SBATCH --account=REPLACE_WITH_YOUR_SLURM_ACCOUNT
+#SBATCH --gres=gpu:a100:1
+#SBATCH --partition=c12m85-a100-1
+#SBATCH --account=ds_ga_1011-2026fa
 
 set -euo pipefail
 source "${SLURM_SUBMIT_DIR}/hpc/env_config.sh"
