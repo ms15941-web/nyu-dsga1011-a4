@@ -47,6 +47,8 @@ def get_args():
                         help="If set, we will use wandb to keep track of experiments")
     parser.add_argument('--experiment_name', type=str, default='experiment',
                         help="How should we name this experiment?")
+    parser.add_argument('--infer_only', action='store_true',
+                        help="Skip training; load best checkpoint and run dev/test inference only")
 
     # Data hyperparameters
     parser.add_argument('--batch_size', type=int, default=16)
@@ -241,13 +243,13 @@ def main():
 
     # Load the data and the model
     train_loader, dev_loader, test_loader = load_t5_data(args.batch_size, args.test_batch_size)
-    model = initialize_model(args)
-    optimizer, scheduler = initialize_optimizer_and_scheduler(args, model, len(train_loader))
 
-    # Train 
-    train(args, model, train_loader, dev_loader, optimizer, scheduler)
+    if not args.infer_only:
+        model = initialize_model(args)
+        optimizer, scheduler = initialize_optimizer_and_scheduler(args, model, len(train_loader))
+        train(args, model, train_loader, dev_loader, optimizer, scheduler)
 
-    # Evaluate
+    # Evaluate from best checkpoint
     model = load_model_from_checkpoint(args, best=True)
     model.eval()
     
@@ -271,3 +273,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
