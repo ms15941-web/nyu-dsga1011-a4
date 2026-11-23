@@ -1,7 +1,7 @@
 #!/bin/bash
 # Shared paths for NYU Torch HPC. Edit ACCOUNT after running: my_slurm_accounts
 
-export ACCOUNT="ds_ga_1011-2026fa"
+export ACCOUNT="cfg3"
 export PARTITION="c12m85-a100-1"
 export NETID="${USER}"
 

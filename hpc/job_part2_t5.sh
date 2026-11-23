@@ -7,7 +7,7 @@
 #SBATCH --mem=48G
 #SBATCH --gres=gpu:a100:1
 #SBATCH --partition=c12m85-a100-1
-#SBATCH --account=ds_ga_1011-2026fa
+#SBATCH --account=cfg3
 
 set -euo pipefail
 source "${SLURM_SUBMIT_DIR}/hpc/env_config.sh"
